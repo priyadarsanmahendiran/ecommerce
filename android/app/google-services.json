@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "835529684014",
+    "project_id": "tdfapp-3dca4",
+    "storage_bucket": "tdfapp-3dca4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:835529684014:android:4951ab98574c06fe5bdbbf",
+        "android_client_info": {
+          "package_name": "com.decorfilms.tdf"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "835529684014-tb0e8nbr9bkerlsfhrqq797q2nni1eoo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpTfCmXHjjcfKZhcTerCrxjD0X6M3f_88"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "835529684014-tb0e8nbr9bkerlsfhrqq797q2nni1eoo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
