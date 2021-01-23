@@ -4,6 +4,7 @@ import 'package:ecommerce/photographer/booking.dart';
 import 'package:ecommerce/photographer/login_screen.dart';
 
 void main() {
+  Firebase.initializeApp();
   runApp(EcommerceApp());
 }
 
