@@ -100,7 +100,6 @@ class _LoginScreenPhotographerState extends State<LoginScreenPhotographer> {
                           Navigator.pushNamed(context, BookingPhotographer.id);
                         }
                       } catch (e) {
-                        print(e);
                       }
                     },
                     minWidth: 200.0,

@@ -1,16 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-
-class Meeting {
-  Meeting({this.eventName, this.from, this.to, this.background, this.isAllDay});
-
-  String eventName;
-  DateTime from;
-  DateTime to;
-  Color background;
-  bool isAllDay;
-}
+import 'dart:math';
 
 class BookingPhotographer extends StatefulWidget {
   static const String id = "Booking";
@@ -19,6 +10,23 @@ class BookingPhotographer extends StatefulWidget {
 }
 
 class _BookingPhotographerState extends State<BookingPhotographer> {
+
+  List<Appointment> querySnapshot;
+  List<Color> _colorCollection;
+  final Random rand = Random();
+  @override
+  void initState(){
+    _initializeEventColor();
+    _getDataFromFirestore().then((results) {
+      if(results!=null) {
+        setState(() {
+          querySnapshot = results;
+        });
+      }
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,27 +35,64 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
         ),
         body: Container(
           child: SfCalendar(
-            view: CalendarView.week,
+            view: CalendarView.month,
             todayHighlightColor: Colors.red,
             showNavigationArrow: true,
             dataSource: _getCalendarDataSource(),
+            showDatePickerButton: true,
+            monthViewSettings: MonthViewSettings(
+              showAgenda: true,
+              agendaViewHeight: 200,
+              dayFormat: 'EEE'
+            ),
           ),
         ));
   }
+  _AppointmentDataSource _getCalendarDataSource() {
+    List<Appointment> appointments = [];
+    appointments.add(Appointment(
+      startTime: DateTime.now(),
+      endTime: DateTime.now().add(Duration(minutes: 10)),
+      subject: 'Event !',
+      color: Colors.red,
+      isAllDay: false,
+    ));
+    appointments = querySnapshot;
+    return _AppointmentDataSource(appointments);
+    // print(querySnapshot.first.subject);
+  }
+
+
+  _getDataFromFirestore () async{
+    final _firestore = FirebaseFirestore.instance;
+    final _events = await _firestore.collection('coimbatore').get();
+    List <Appointment> appoints = [];
+    for(var event in _events.docs){
+      appoints.add(Appointment(
+          startTime: DateTime.fromMicrosecondsSinceEpoch(event.data()['StartTime'].microsecondsSinceEpoch),
+          endTime: DateTime.fromMicrosecondsSinceEpoch(event.data()['EndTime'].microsecondsSinceEpoch),
+          subject: event.data()['EventName'],
+          color: _colorCollection[rand.nextInt(8)],
+          isAllDay: false,
+      ));
+    }
+    return appoints;
+  }
+  void _initializeEventColor() {
+    this._colorCollection = new List<Color>();
+    _colorCollection.add(const Color(0xFF0F8644));
+    _colorCollection.add(const Color(0xFF8B1FA9));
+    _colorCollection.add(const Color(0xFFD20100));
+    _colorCollection.add(const Color(0xFFFC571D));
+    _colorCollection.add(const Color(0xFF36B37B));
+    _colorCollection.add(const Color(0xFF01A1EF));
+    _colorCollection.add(const Color(0xFF3D4FB5));
+    _colorCollection.add(const Color(0xFFE47C73));
+    _colorCollection.add(const Color(0xFF636363));
+    _colorCollection.add(const Color(0xFF0A8043));
+  }
 }
 
-_AppointmentDataSource _getCalendarDataSource() {
-  List<Appointment> appointments = <Appointment>[];
-  appointments.add(Appointment(
-    startTime: DateTime.now(),
-    endTime: DateTime.now().add(Duration(minutes: 10)),
-    subject: 'Event !',
-    color: Colors.red,
-    isAllDay: true,
-  ));
-
-  return _AppointmentDataSource(appointments);
-}
 
 class _AppointmentDataSource extends CalendarDataSource {
   _AppointmentDataSource(List<Appointment> source) {

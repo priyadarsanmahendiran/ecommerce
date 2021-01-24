@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ecommerce/photographer/booking.dart';
 import 'package:ecommerce/photographer/login_screen.dart';
 
+
 void main() {
   Firebase.initializeApp();
   runApp(EcommerceApp());
@@ -11,7 +12,6 @@ void main() {
 class EcommerceApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    Firebase.initializeApp();
     return MaterialApp(
       initialRoute: LoginScreenPhotographer.id,
       routes: {
