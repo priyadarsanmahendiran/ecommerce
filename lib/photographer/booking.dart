@@ -50,13 +50,6 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
   }
   _AppointmentDataSource _getCalendarDataSource() {
     List<Appointment> appointments = [];
-    appointments.add(Appointment(
-      startTime: DateTime.now(),
-      endTime: DateTime.now().add(Duration(minutes: 10)),
-      subject: 'Event !',
-      color: Colors.red,
-      isAllDay: false,
-    ));
     appointments = querySnapshot;
     return _AppointmentDataSource(appointments);
     // print(querySnapshot.first.subject);
