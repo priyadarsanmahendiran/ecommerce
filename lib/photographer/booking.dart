@@ -34,19 +34,29 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
           title: Text("Photographer's View"),
         ),
         body: Container(
-          child: SfCalendar(
-            view: CalendarView.month,
-            todayHighlightColor: Colors.red,
-            showNavigationArrow: true,
-            dataSource: _getCalendarDataSource(),
-            showDatePickerButton: true,
-            monthViewSettings: MonthViewSettings(
-              showAgenda: true,
-              agendaViewHeight: 200,
-              dayFormat: 'EEE'
+          child:
+            RefreshIndicator(
+              child: ListView(
+                itemExtent: 700,
+                children: [SfCalendar(
+                      view: CalendarView.month,
+                      todayHighlightColor: Colors.red,
+                      showNavigationArrow: true,
+                      dataSource: _getCalendarDataSource(),
+                      showDatePickerButton: true,
+                      monthViewSettings: MonthViewSettings(
+                        showAgenda: true,
+                        agendaViewHeight: 200,
+                        dayFormat: 'EEE',
+                        appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                      ),
+                    )
+                ]
+              ),
+              onRefresh: _getDataRefresh,
             ),
-          ),
-        ));
+        ),
+    );
   }
   _AppointmentDataSource _getCalendarDataSource() {
     List<Appointment> appointments = [];
@@ -55,6 +65,17 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
     // print(querySnapshot.first.subject);
   }
 
+  Future <void> _getDataRefresh() async {
+    setState(() {
+      _getDataFromFirestore().then((results) {
+        if(results!=null) {
+          setState(() {
+            querySnapshot = results;
+          });
+        }
+      });
+    });
+  }
 
   _getDataFromFirestore () async{
     final _firestore = FirebaseFirestore.instance;
