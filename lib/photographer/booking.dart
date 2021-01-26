@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'dart:math';
+import 'package:ecommerce/photographer/event_details.dart';
 
 class BookingPhotographer extends StatefulWidget {
   static const String id = "Booking";
@@ -13,6 +14,7 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
 
   List<Appointment> querySnapshot;
   List<Color> _colorCollection;
+  DateTime today = new DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   final Random rand = Random();
   @override
   void initState(){
@@ -35,27 +37,29 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
         ),
         body: Container(
           child:
-            RefreshIndicator(
-              child: ListView(
-                itemExtent: 700,
-                children: [SfCalendar(
-                      view: CalendarView.month,
-                      todayHighlightColor: Colors.red,
-                      showNavigationArrow: true,
-                      dataSource: _getCalendarDataSource(),
-                      showDatePickerButton: true,
-                      monthViewSettings: MonthViewSettings(
-                        showAgenda: true,
-                        agendaViewHeight: 200,
-                        dayFormat: 'EEE',
-                        appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-                      ),
-                    )
-                ]
-              ),
-              onRefresh: _getDataRefresh,
+                RefreshIndicator(
+                  child: ListView(
+                    itemExtent: 600,
+                    children: [
+                      SfCalendar(
+                          onTap: _EventPressed,
+                          initialSelectedDate: DateTime.now(),
+                          view: CalendarView.month,
+                          todayHighlightColor: Colors.red,
+                          showNavigationArrow: true,
+                          dataSource: _getCalendarDataSource(),
+                          showDatePickerButton: true,
+                          monthViewSettings: MonthViewSettings(
+                            showAgenda: true,
+                            agendaViewHeight: 200,
+                            dayFormat: 'EEE',
+                          ),
+                        ),
+                     ]
+                  ),
+                  onRefresh: _getDataRefresh,
+                ),
             ),
-        ),
     );
   }
   _AppointmentDataSource _getCalendarDataSource() {
@@ -87,11 +91,19 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
           endTime: DateTime.fromMicrosecondsSinceEpoch(event.data()['EndTime'].microsecondsSinceEpoch),
           subject: event.data()['EventName'],
           color: _colorCollection[rand.nextInt(8)],
+          location: event.data()['Location'],
           isAllDay: false,
       ));
     }
     return appoints;
   }
+
+  void _EventPressed(CalendarTapDetails details){
+    if(details != null && details.appointments.length == 1) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => EventDetail(eventSel: details.appointments.first)));
+    }
+  }
+
   void _initializeEventColor() {
     this._colorCollection = new List<Color>();
     _colorCollection.add(const Color(0xFF0F8644));
