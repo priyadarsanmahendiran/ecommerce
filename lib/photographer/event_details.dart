@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_formfield/dropdown_formfield.dart';
 
 class EventDetail extends StatelessWidget {
-  EventDetail({this.eventSel});
+  EventDetail({this.eventSel, this.loc});
   final Appointment eventSel;
+  final String loc;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('TDF APP'),
       ),
-      body: EventDetails(event: eventSel),
+      body: EventDetails(event: eventSel, location: loc),
     );
   }
 }
@@ -19,18 +21,28 @@ class EventDetail extends StatelessWidget {
 
 class EventDetails extends StatefulWidget {
   final Appointment event;
-  EventDetails({this.event});
+  final String location;
+  EventDetails({this.event, this.location});
 
   @override
-  _EventDetailsState createState() => _EventDetailsState(eventSelected: event);
+  _EventDetailsState createState() => _EventDetailsState(eventSelected: event, location: location);
 }
 
 class _EventDetailsState extends State<EventDetails> {
-  _EventDetailsState({this.eventSelected});
+  _EventDetailsState({this.eventSelected, this.location});
+  final String location;
   final Appointment eventSelected;
   bool finishButtonDisabled = true;
   bool acceptButtonDisabled = false;
   bool extendedButtonDisabled = true;
+  final _firestore = FirebaseFirestore.instance;
+  var userID;
+  static const kInActiveButtonstyle = Colors.grey;
+  static const kExtendedButtonstyle = Colors.red;
+  static const kActiveButtonStyle = Colors.green;
+  String _hours;
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -70,19 +82,23 @@ class _EventDetailsState extends State<EventDetails> {
                 borderRadius: BorderRadius.all(Radius.circular(15.0)),
                 child: MaterialButton(
                   onPressed: acceptButtonDisabled ? null: () {
-                    finishButtonDisabled = false;
-                    extendedButtonDisabled = false;
-                    acceptButtonDisabled = true;
+                    setState(() {
+                      finishButtonDisabled = false;
+                      extendedButtonDisabled = false;
+                      acceptButtonDisabled = true;
+                      _firestore.collection(location).doc(eventSelected.notes).update({"Status": "Accepted"})
+                      .then((value) => print('success'));
+                    });
                   },
                   child: Text(
                       'Accept',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.white
                       )
                   ),
                   height: 10.0,
                 ),
-                color: Colors.green,
+                color: acceptButtonDisabled ? kInActiveButtonstyle : kActiveButtonStyle,
               ),
             ),
             Padding(
@@ -92,17 +108,17 @@ class _EventDetailsState extends State<EventDetails> {
                 child: MaterialButton(
                   enableFeedback: false,
                   onPressed: finishButtonDisabled ? null : (){
-                    print('AAAA');
+                    _firestore.collection(location).doc(eventSelected.notes).update({"Status" : "Completed"});
                   },
                   child: Text(
                       'Finished',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.white
                       )
                   ),
                   height: 10.0,
                 ),
-                color: Colors.green,
+                color: finishButtonDisabled ? kInActiveButtonstyle : kActiveButtonStyle,
               ),
             ),
             Padding(
@@ -111,17 +127,17 @@ class _EventDetailsState extends State<EventDetails> {
                 borderRadius: BorderRadius.all(Radius.circular(15.0)),
                 child: MaterialButton(
                   onPressed: extendedButtonDisabled ? null : (){
-
+                    showDialogBox();
                   },
                   child: Text(
                       'Extended',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.white
                       )
                   ),
                   height: 10.0,
                 ),
-                color: Colors.red,
+                color: extendedButtonDisabled ? kInActiveButtonstyle : kExtendedButtonstyle,
               ),
             ),
           ],
@@ -182,6 +198,82 @@ class _EventDetailsState extends State<EventDetails> {
 
   String getLocation(){
     return "Location: " + eventSelected.location.toString();
+  }
+
+  eventExtended() async{
+      final _extended = await _firestore.collection(location).doc(eventSelected.notes).update({"Status" : "Extended"})
+          .then((value) {
+            print('EVENT EXTED');
+      });
+  }
+
+  void showDialogBox(){
+    showDialog(
+      context: context,
+      builder: (context) {
+        return new Dialog(
+          child: Form(
+            key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(16),
+                    child: DropDownFormField(
+                      value: _hours,
+                      onSaved: (value) {
+                        setState(() {
+                          _hours = value;
+                        });
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          _hours = value;
+                        });
+                      },
+                      dataSource: [
+                        {
+                          "display": "One Hour",
+                          "value" : "1"
+                        },
+                        {
+                          "display": "Two Hours",
+                          "value" : "2"
+                        },
+                        {
+                          "display": "Three Hours",
+                          "value" : "3"
+                        },
+                        {
+                          "display": "Four Hours",
+                          "value" : "4"
+                        },
+                        {
+                          "display": "Five Hours",
+                          "value" : "5"
+                        },
+                      ],
+                      textField: "display",
+                      valueField: "value",
+                    )
+                  ),
+                  RaisedButton(
+                      onPressed: eventExtended,
+                      child: Text(
+                          'Extend',
+                        style: TextStyle(
+                          color: Colors.white
+                        ),
+                      ),
+                      color: Colors.red,
+                  )
+                ],
+              ),
+
+          )
+        );
+      }
+    );
   }
 
 }

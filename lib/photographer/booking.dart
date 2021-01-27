@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'dart:math';
 import 'package:ecommerce/photographer/event_details.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class BookingPhotographer extends StatefulWidget {
   static const String id = "Booking";
@@ -14,10 +15,14 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
 
   List<Appointment> querySnapshot;
   List<Color> _colorCollection;
-  DateTime today = new DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   final Random rand = Random();
+  var userID;
+  final _auth = FirebaseAuth.instance;
+  var _loc;
+
   @override
   void initState(){
+    userID = _auth.currentUser.uid;
     _initializeEventColor();
     _getDataFromFirestore().then((results) {
       if(results!=null) {
@@ -83,7 +88,11 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
 
   _getDataFromFirestore () async{
     final _firestore = FirebaseFirestore.instance;
-    final _events = await _firestore.collection('coimbatore').get();
+    final _userDetails = await _firestore.collection('photographers').doc(userID).get();
+    String _location = _userDetails.data()['Location'];
+    _loc =_location.toLowerCase();
+    print(_loc);
+    final _events = await _firestore.collection(_loc).where('EmployeeId', isEqualTo: "1").where('Status', isEqualTo: "NotAccepted").get();
     List <Appointment> appoints = [];
     for(var event in _events.docs){
       appoints.add(Appointment(
@@ -93,6 +102,7 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
           color: _colorCollection[rand.nextInt(8)],
           location: event.data()['Location'],
           isAllDay: false,
+          notes: event.id,
       ));
     }
     return appoints;
@@ -100,7 +110,7 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
 
   void _EventPressed(CalendarTapDetails details){
     if(details != null && details.appointments.length == 1) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => EventDetail(eventSel: details.appointments.first)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => EventDetail(eventSel: details.appointments.first, loc: _loc,)));
     }
   }
 
