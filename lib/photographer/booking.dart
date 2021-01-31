@@ -90,9 +90,10 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
     final _firestore = FirebaseFirestore.instance;
     final _userDetails = await _firestore.collection('photographers').doc(userID).get();
     String _location = _userDetails.data()['Location'];
+    String _empId = _userDetails.data()['EmployeeId'];
     _loc =_location.toLowerCase();
     print(_loc);
-    final _events = await _firestore.collection(_loc).where('EmployeeId', isEqualTo: "1").where('Status', isEqualTo: "NotAccepted").get();
+    final _events = await _firestore.collection(_loc).where('EmployeeId', isEqualTo: _empId).where('Status', isEqualTo: "NotAccepted").get();
     List <Appointment> appoints = [];
     for(var event in _events.docs){
       appoints.add(Appointment(
@@ -107,6 +108,7 @@ class _BookingPhotographerState extends State<BookingPhotographer> {
     }
     return appoints;
   }
+
 
   void _EventPressed(CalendarTapDetails details){
     if(details != null && details.appointments.length == 1) {

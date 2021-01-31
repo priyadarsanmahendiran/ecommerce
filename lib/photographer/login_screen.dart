@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ecommerce/photographer/booking.dart';
+import 'package:ecommerce/enduser/login_user.dart';
+import 'package:ecommerce/photographer/register_photographer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginScreenPhotographer extends StatefulWidget {
   static const String id = "loginphoto";
@@ -12,106 +15,187 @@ class LoginScreenPhotographer extends StatefulWidget {
 class _LoginScreenPhotographerState extends State<LoginScreenPhotographer> {
   final _auth = FirebaseAuth.instance;
   String email, password;
+  final _firestore = FirebaseFirestore.instance;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.white,
-        body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Hero(
-                tag: 'logo',
-                child: Container(
-                  height: 70.0,
-                  child: Image.asset(
-                      'images/photo-1513031300226-c8fb12de9ade.jpg'),
+    return new Stack(
+      children: <Widget>[
+        // The containers in the background
+        new Column(
+          children: <Widget>[
+            new Container(
+              height: MediaQuery.of(context).size.height * .50,
+              child:
+              Image(
+                image: AssetImage('images/photo-1513031300226-c8fb12de9ade.jpg'),
+                fit: BoxFit.fitHeight,
+              ),
+            ),
+            new Container(
+              height: MediaQuery.of(context).size.height * .50,
+              color: Colors.white,
+            )
+          ],
+        ),
+        // The card widget with top padding,
+        // incase if you wanted bottom padding to work,
+        // set the `alignment` of container to Alignment.bottomCenter
+        new Container(
+          alignment: Alignment.topCenter,
+          padding: new EdgeInsets.only(
+              top: MediaQuery.of(context).size.height * .35,
+              right: 20.0,
+              left: 20.0),
+          child: new Container(
+            height: 430.0,
+            width: MediaQuery.of(context).size.width,
+            child: Form(
+              child: new Card(
+                color: Colors.white,
+                elevation: 4.0,
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                      children: <Widget>[
+                        Container(
+                          child: Icon(
+                            Icons.person_rounded,
+                            color: Colors.black,
+                            size: 70.0,
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(6.0, 0, 6.0, 6.0),
+                          decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: TextField(
+                            onChanged: (value) {
+                              email = value;
+                            },
+                            style: TextStyle(
+                              color: Colors.blue,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Email',
+                              labelStyle: TextStyle(
+                                color: Colors.white,
+                              ),
+                              hoverColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10.0,
+                        ),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(6.0, 0, 6.0, 6.0),
+                          decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: TextField(
+                            onChanged: (value) {
+                              password = value;
+                            },
+                            style: TextStyle(
+                              color: Colors.blue,
+                            ),
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              labelStyle: TextStyle(
+                                color: Colors.white,
+                              ),
+                              hoverColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          child: TextButton(
+                            onPressed: () {},
+                            child: Text(
+                              'Forgot password ?',
+                            ),
+                          ),
+                        ),
+                        Container(
+                          child: RaisedButton(
+                            onPressed: () {
+                              _auth.signInWithEmailAndPassword(email: email, password: password)
+                                  .then((value) => {
+                                    _firestore.collection('photographers').doc(_auth.currentUser.uid).get()
+                                      .then((value) => {
+                                        print(_auth.currentUser.email),
+                                        if(value.data()['Status']=="Selected") {
+                                          Navigator.pushNamed(context, BookingPhotographer.id)
+                                        }
+                                        else {
+                                          _auth.signOut()
+                                          .then((value) => {
+                                            showDialogBox()
+                                          })
+                                        }
+                                    })
+                                });
+                            },
+                            child: Text(
+                              'LOGIN',
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                            color: Colors.deepOrange,
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, RegisterPhotographer.id);
+                            },
+                            child: Text(
+                              'Register as a Photographer!',
+                            ),
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, LoginUser.id);
+                            },
+                            child: Text(
+                              'Want to book a Photographer/Videographer?',
+                            ),
+                          ),
+                        ),
+                      ]
+                  ),
                 ),
               ),
-              SizedBox(
-                height: 48.0,
-              ),
-              TextField(
-                onChanged: (value) {
-                  email = value;
-                },
-                decoration: InputDecoration(
-                  hintText: 'Enter your email',
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(32.0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Colors.lightBlueAccent, width: 1.0),
-                    borderRadius: BorderRadius.all(Radius.circular(32.0)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Colors.lightBlueAccent, width: 2.0),
-                    borderRadius: BorderRadius.all(Radius.circular(32.0)),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 8.0,
-              ),
-              TextField(
-                onChanged: (value) {
-                  password = value;
-                },
-                decoration: InputDecoration(
-                  hintText: 'Enter your password.',
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(32.0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Colors.lightBlueAccent, width: 1.0),
-                    borderRadius: BorderRadius.all(Radius.circular(32.0)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Colors.lightBlueAccent, width: 2.0),
-                    borderRadius: BorderRadius.all(Radius.circular(32.0)),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 24.0,
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Material(
-                  color: Colors.lightBlueAccent,
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                  elevation: 5.0,
-                  child: MaterialButton(
-                    onPressed: () {
-                      try {
-                        final _user = _auth.signInWithEmailAndPassword(
-                            email: email, password: password);
-                        if (_user != null) {
-                          Navigator.pushNamed(context, BookingPhotographer.id);
-                        }
-                      } catch (e) {
-                      }
-                    },
-                    minWidth: 200.0,
-                    height: 42.0,
-                    child: Text(
-                      'Log In',
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ));
+        )
+      ],
+    );
+  }
+  void showDialogBox(){
+    showDialog(
+        context: context,
+        builder: (context) {
+          return new Dialog(
+              child: Container(
+                height: 100.0,
+                child: Center(
+                  child: Card(
+                    child: Text('You are not yet selected'),
+                  ),
+                ),
+              )
+          );
+        }
+    );
   }
 }

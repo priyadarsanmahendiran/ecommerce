@@ -91,7 +91,7 @@ class _EventDetailsState extends State<EventDetails> {
                     });
                   },
                   child: Text(
-                      'Accept',
+                      'Start',
                       style: TextStyle(
                         color: Colors.white
                       )
@@ -201,9 +201,10 @@ class _EventDetailsState extends State<EventDetails> {
   }
 
   eventExtended() async{
+    print(eventSelected.endTime.hour);
       final _extended = await _firestore.collection(location).doc(eventSelected.notes).update({"Status" : "Extended"})
           .then((value) {
-            print('EVENT EXTED');
+            print('EVENT EXTEND');
       });
   }
 
@@ -224,10 +225,12 @@ class _EventDetailsState extends State<EventDetails> {
                       onSaved: (value) {
                         setState(() {
                           _hours = value;
+                          print(_hours);
                         });
                       },
                       onChanged: (value) {
                         setState(() {
+                          print(_hours);
                           _hours = value;
                         });
                       },
